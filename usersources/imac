@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source ~/Documents/Development/Github/hadw-valentinesday-2018/virtualenv/bin/activate
+
