@@ -1,3 +1,5 @@
+#include <Servo.h>
+
 #define LEDONE    2
 #define LEDTWO    3
 #define LEDTHREE  4
@@ -5,22 +7,25 @@
 
 #define BUTTON    12
 
+#define SERVO     13
+
+Servo scanServo;
+
 int controlByte;
 
 long scanPreviousMillis = 0;
 long cascadePreviousMillis = 0;
+long servoPreviousMillis = 0;
 
 int scanMillis = 5000;
 int cascadeMillis = 60;
-
-int cascadeLed = 2;
+int servoMillis = 15;
 
 bool buttonLock = false;
 
 bool scanning = false;
 bool scanComplete = false;
 
-bool cascadeForward = true;
 
 void setLeds(bool onOff=true) {
   for ( int i = 2; i < 12; i++ ) {
@@ -28,6 +33,8 @@ void setLeds(bool onOff=true) {
   }
 }
 
+int cascadeLed = 2;
+bool cascadeForward = true;
 void cascadeLeds() {
   setLeds(false);
   digitalWrite(cascadeLed, true);
@@ -44,14 +51,34 @@ void cascadeLeds() {
   }
 }
 
+int servoPos = 0;
+bool servoForward = true;
+void servoMove() {
+  Serial.println("MOVING SERVO");
+  scanServo.write(servoPos);
+  if ( servoForward ) {
+    servoPos++;
+  } else {
+    servoPos--;
+  }
+  if ( 90 <= servoPos ) {
+    servoForward = false;
+  } else if ( 0 >= servoPos ) {
+    servoForward = true;
+  }
+}
+
 void setup() {
   for (int i=2; i < 12; i++) {
     pinMode(i, OUTPUT);
   }
   pinMode(BUTTON, INPUT);
+  scanServo.attach(SERVO);
   
   // Print to serial console
   Serial.begin(9600);
+
+  Serial.println("Device is ready...");
 }
 
 void loop() {
@@ -60,6 +87,7 @@ void loop() {
   
   unsigned int scanDiff = currentMillis - scanPreviousMillis;
   unsigned int cascadeDiff = currentMillis - cascadePreviousMillis;
+  unsigned int servoDiff = currentMillis - servoPreviousMillis;
   
 //  Serial.println(digitalRead(BUTTON));
 
@@ -87,16 +115,27 @@ void loop() {
     }
   }
 
-  if ( scanning && ( scanDiff > scanMillis ) && buttonLock ) {
-    scanComplete = true;
-    scanning = false;
-  } 
+  if ( scanDiff > scanMillis ) {
+//    Serial.println(scanDiff);
+    if ( scanning && buttonLock ) {
+      scanComplete = true;
+      scanning = false;
+    }
+  }
 
   if ( cascadeDiff > cascadeMillis ) {
     cascadeDiff = 0;
     cascadePreviousMillis = currentMillis;
     if ( scanning ) {
       cascadeLeds();
+    }
+  }
+
+  if ( servoDiff > servoMillis ) {
+    servoDiff = 0;
+    servoPreviousMillis = currentMillis;
+    if ( scanning ) {
+      servoMove();
     }
   }
 
