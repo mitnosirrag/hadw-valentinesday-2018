@@ -4,12 +4,15 @@ import serial
 import platform
 import random
 from subprocess import call
+from threading import Timer
 
 class HaLoveBot():
 
     phrases = []
 
     serial_ports = []
+
+    recent_phrases = [];
 
     def __init__(self):
         print "Starting setup"
@@ -90,12 +93,19 @@ class HaLoveBot():
         max = len(self.phrases) - 1
         random.seed()
         rand = random.randint(0, max)
+
+        if rand in self.recent_phrases:
+            return self.speak_random_phrase()
+
+        self.recent_phrases.append(rand)
+        if 3 < len(self.recent_phrases):
+            self.recent_phrases.pop(0)
+
         phrase = self.phrases[rand]
         self.speak(phrase)
 
     def startup(self):
-        phrase = "Hello I'm JoJo  the Jovial Operating Narration Affection System. Please place your face in the box to begin face scanning to get a personalized Valentine message."
-        # phrase = "Hello"
+        phrase = "Hello, I am Deb, bot. Here to provide a personalized Valentine. Please stick your head in my box to commence facial recognition."
         self.speak(phrase)
         self.send("1")
 

@@ -17,7 +17,7 @@ long scanPreviousMillis = 0;
 long cascadePreviousMillis = 0;
 long servoPreviousMillis = 0;
 
-int scanMillis = 5000;
+int scanMillis = 12500;
 int cascadeMillis = 60;
 int servoMillis = 15;
 
@@ -28,7 +28,7 @@ bool scanComplete = false;
 
 
 void setLeds(bool onOff=true) {
-  for ( int i = 2; i < 12; i++ ) {
+  for ( int i = 2; i < 11; i++ ) {
     digitalWrite(i, onOff);
   }
 }
@@ -43,8 +43,8 @@ void cascadeLeds() {
   } else {
     cascadeLed--;
   }
-  Serial.println(cascadeLed);
-  if ( 11 <= cascadeLed ) {
+//  Serial.println(cascadeLed);
+  if ( 10 <= cascadeLed ) {
     cascadeForward = false;
   } else if ( 2 >= cascadeLed ) {
     cascadeForward = true;
@@ -54,14 +54,14 @@ void cascadeLeds() {
 int servoPos = 0;
 bool servoForward = true;
 void servoMove() {
-  Serial.println("MOVING SERVO");
+//  Serial.println("MOVING SERVO");
   scanServo.write(servoPos);
   if ( servoForward ) {
     servoPos++;
   } else {
     servoPos--;
   }
-  if ( 90 <= servoPos ) {
+  if ( 180 <= servoPos ) {
     servoForward = false;
   } else if ( 0 >= servoPos ) {
     servoForward = true;
@@ -69,7 +69,7 @@ void servoMove() {
 }
 
 void setup() {
-  for (int i=2; i < 12; i++) {
+  for (int i=2; i < 11; i++) {
     pinMode(i, OUTPUT);
   }
   pinMode(BUTTON, INPUT);
@@ -109,6 +109,7 @@ void loop() {
     Serial.print("REMOTE COMMAND RECEIVED: ");
     Serial.println(controlByte);
     if ( 49 == controlByte ) { // 1
+      delay(2000);
       scanDiff = 0;
       scanPreviousMillis = currentMillis;
       scanning = true;
